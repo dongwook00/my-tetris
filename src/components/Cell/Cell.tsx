@@ -4,10 +4,11 @@ import { TETROMINOS } from '../../setup';
 
 type Props = {
   type: keyof typeof TETROMINOS;
+  index: number;
 };
 
-const Cell: React.FC<Props> = ({ type }) => {
-  return <StyledCell type={type} color={TETROMINOS[type].color} />;
+const Cell: React.FC<Props> = ({ type, index }) => {
+  return <StyledCell data-index={index} type={type} color={TETROMINOS[type].color} />;
 };
 
 export default React.memo(Cell);

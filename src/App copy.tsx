@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { throttle } from 'lodash';
 import { createStage, isColliding } from './gameHelpers';
 
@@ -21,15 +21,15 @@ const App: React.FC = () => {
 
   const { player, updatePlayerPos, resetPlayer, playerRotate } = usePlayer();
   const { stage, setStage, rowsCleared } = useStage(player, resetPlayer);
-  const { setScore, rows, setRows, level, setLevel } = useGameStatus(rowsCleared);
+  const { score, setScore, rows, setRows, level, setLevel } = useGameStatus(rowsCleared);
 
-  const movePlayer = useCallback(
+  const movePlayer = React.useCallback(
     (dir: number) => {
       if (!isColliding(player, stage, { x: dir, y: 0 })) {
         updatePlayerPos({ x: dir, y: 0, collided: false });
       }
     },
-    [player, stage],
+    [updatePlayerPos],
   );
 
   const keyUp = ({ keyCode }: { keyCode: number }): void => {
@@ -86,9 +86,10 @@ const App: React.FC = () => {
     drop();
   }, dropTime);
 
-  const onMouseMove = useCallback(
+  const onMouseMove = React.useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       if (!e.currentTarget) return;
+      console.log('onmosuemove');
       const elements = e.currentTarget.children;
       const target = e.target as HTMLElement;
       let indexOfcurrentBlock;
@@ -104,35 +105,42 @@ const App: React.FC = () => {
         right = indexOfcurrentBlock < indexOfMouseCursor;
         left = indexOfcurrentBlock > indexOfMouseCursor;
       }
-      if (left) {
-        movePlayer(-1);
-      } else if (right) {
-        movePlayer(1);
-      }
+      // console.log('result', right, left);
+      if (left) movePlayer(-1);
+      if (right) movePlayer(1);
     },
     [movePlayer],
   );
 
-  const throttled = useCallback(
+  const throttled = React.useCallback(
     throttle((e: React.MouseEvent<HTMLDivElement>) => onMouseMove(e), 1000),
     [onMouseMove],
   );
 
+  const mousemove = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      throttled(e);
+    },
+    [throttled],
+  );
   return (
     <StyledTetrisWrapper role="button" tabIndex={0} onKeyDown={move} onKeyUp={keyUp} ref={gameArea}>
       <StyledTetris>
         <div className="display">
           {gameOver ? (
             <>
+              <Display gameOver={gameOver} text="Game Over!" />
               <StartButton callback={handleStartGame} />
             </>
           ) : (
             <>
-              <Display text="플레이중" />
+              <Display text={`Score: ${score}`} />
+              <Display text={`Rows: ${rows}`} />
+              <Display text={`Level: ${level}`} />
             </>
           )}
         </div>
-        <Stage stage={stage} onMouseMove={throttled} />
+        <Stage stage={stage} onMouseMove={mousemove} />
       </StyledTetris>
     </StyledTetrisWrapper>
   );

@@ -8,10 +8,11 @@ export type STAGE = STAGECELL[][];
 
 type Props = {
   stage: STAGE;
+  onMouseMove: (e: React.MouseEvent<HTMLDivElement>) => void;
 };
 
-const Stage: React.FC<Props> = ({ stage }) => (
-  <StyledStage>{stage.map((row) => row.map((cell, x) => <Cell key={x} type={cell[0]} />))}</StyledStage>
+const Stage: React.FC<Props> = ({ stage, onMouseMove }) => (
+  <StyledStage onMouseMove={onMouseMove}>{stage.map((row) => row.map((cell, x) => <Cell index={x} key={x} type={cell[0]} />))}</StyledStage>
 );
 
 export default Stage;
